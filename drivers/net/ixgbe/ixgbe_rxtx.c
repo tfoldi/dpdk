@@ -524,7 +524,8 @@ tx_desc_ol_flags_to_cmdtype(uint64_t ol_flags)
 
 /* Default RS bit threshold values */
 #ifndef DEFAULT_TX_RS_THRESH
-#define DEFAULT_TX_RS_THRESH   32
+//#define DEFAULT_TX_RS_THRESH   32
+#define DEFAULT_TX_RS_THRESH   1
 #endif
 #ifndef DEFAULT_TX_FREE_THRESH
 #define DEFAULT_TX_FREE_THRESH 32
@@ -2361,11 +2362,16 @@ ixgbe_dev_tx_queue_setup(struct rte_eth_dev *dev,
 	 * H/W race condition, hence the maximum threshold constraints.
 	 * When set to zero use default values.
 	 */
+        
+        PMD_INIT_LOG(ERR, "CONF: tx_rs_thresh=%u", (uint16_t)(tx_conf->tx_rs_thresh));
 	tx_rs_thresh = (uint16_t)((tx_conf->tx_rs_thresh) ?
 			tx_conf->tx_rs_thresh :
 			(rs_deferring_allowed ? DEFAULT_TX_RS_THRESH : 1));
 	tx_free_thresh = (uint16_t)((tx_conf->tx_free_thresh) ?
 			tx_conf->tx_free_thresh : DEFAULT_TX_FREE_THRESH);
+
+	if (tx_rs_thresh > 1 )
+		tx_rs_thresh = 1;
 
 	if (!rs_deferring_allowed && tx_rs_thresh > 1) {
 		PMD_INIT_LOG(ERR, "tx_rs_thresh must be less than 2 since RS "
